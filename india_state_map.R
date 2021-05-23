@@ -3,8 +3,14 @@ library(leaflet.extras) #leaflet functionality
 library(sf) #read geojson
 library(tidyverse) #data manipulation
 
+# Get current date
+today <- format(Sys.Date()-1 , "%m-%d-%Y")
+
+# Get repo URL
+repo_url <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/", today, ".csv")
+
 # India data
-dat <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/05-21-2021.csv") %>% 
+dat <- read.csv(repo_url) %>% 
   filter(Country_Region == "India", Province_State != "Unknown") %>% 
   select(Province_State, Country_Region, Confirmed, Deaths, Recovered, Active, Incident_Rate, Case_Fatality_Ratio, Last_Update) 
   
