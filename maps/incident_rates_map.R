@@ -3,32 +3,20 @@ library(leaflet.extras) #leaflet functionality
 library(sf) #read geojson
 library(tidyverse) #data manipulation
 
-# Get current date
-today <- format(Sys.Date()-1 , "%m-%d-%Y")
-
-# Get repo URL
-repo_url <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/", today, ".csv")
-
-# India data
-dat <- read.csv(repo_url) %>% 
-  filter(Country_Region == "India", Province_State != "Unknown") %>% 
-  select(Province_State, Country_Region, Confirmed, Deaths, Recovered, Active, Incident_Rate, Case_Fatality_Ratio, Last_Update) 
-  
-
-# Reading India geojson
-india_states <- st_read("https://github.com/geohacker/india/raw/master/state/india_telengana.geojson")
+# Getting India GEOJSON data
+source("https://raw.githubusercontent.com/alvinndo/covid-viz-india/main/functions/get_geojson.R")
 
 # COLORS!!
-pal <- colorNumeric("viridis", NULL)
+pal <- colorNumeric("Reds", NULL)
 
 # Initializing leaflet map for states of India
 m <- leaflet() %>%
   addResetMapButton() %>% 
   addSearchOSM(options = searchOptions(hideMarkerOnCollapse = T)) %>% 
-  addLegend(title = "Confirmed Cases",
+  addLegend(title = paste0("Incident Rates<br>Updated: ", today),
             position = "topright",
             pal = pal,
-            values = dat$Confirmed,
+            values = india_states$incident_rate,
             opacity = 1) %>% 
   addProviderTiles(provider = "CartoDB.Positron") %>% 
   addPolygons(data = india_states,
@@ -38,19 +26,20 @@ m <- leaflet() %>%
               smoothFactor = 0.5,
               fillOpacity = 0.75,
               dashArray = "1",
-              fillColor = ~pal(dat$Confirmed),
+              fillColor = ~pal(india_states$incident_rate),
               highlightOptions = highlightOptions(color = "white", weight = 2, bringToFront = TRUE),
               label = sprintf("<strong>%s</strong>
                                 <hr>
-                                <b>Current Cumulative Count: </b>%s
+                                <b>Current Cumulative Cases: </b>%s
                                 <br/>
                                 <b>Average New Cases per 100,000: </b>%g",
-                              india_states$NAME_1,
-                              format(dat$Confirmed, scientific = FALSE),
-                              dat$Incident_Rate) %>% lapply(htmltools::HTML),
+                              india_states$state,
+                              format(india_states$cases, scientific = FALSE),
+                              india_states$incident_rate) %>% lapply(htmltools::HTML),
               labelOptions = labelOptions(
                 style = list("font-weight" = "normal", padding = "3px 8px"),
                 textsize = "15px",
-                direction = "auto")) 
-  
-  
+                direction = "auto"))
+
+# Clean-up
+rm(dat, india_states, repo_url, today, pal)

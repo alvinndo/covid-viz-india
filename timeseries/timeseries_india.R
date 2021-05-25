@@ -1,14 +1,9 @@
-addUnits <- function(n) {
-  labels <- ifelse(n < 1000, n,  # less than thousands
-                   ifelse(n < 1e6, paste0(round(n/1e3), 'k'),  # in thousands
-                          ifelse(n < 1e9, paste0(round(n/1e6), 'M'),  # in millions
-                                 ifelse(n < 1e12, paste0(round(n/1e9), 'B'), # in billions
-                                        ifelse(n < 1e15, paste0(round(n/1e12), 'T'), # in trillions
-                                               'too big!'
-                                        )))))
-  return(labels)
-}
+library(tidyverse)
 
+# Function to add units on Y-axis labels
+source("https://raw.githubusercontent.com/alvinndo/covid-viz-india/main/functions/addUnits.R")
+
+# Time series data from India. Starting from 1-22-20
 timeseries_india <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv") %>% 
   filter(Country.Region == "India") %>% 
   pivot_longer(cols = starts_with("X"),
@@ -19,6 +14,7 @@ timeseries_india <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/C
   rename(country = "Country.Region") %>% 
   mutate(date = as.Date(date, "%m.%d.%y"))
 
+# Creating plot
 ggplot(timeseries_india, aes(x = date, y = cases)) +
   geom_point() +
   scale_x_date(date_labels = "%Y %b",
@@ -26,7 +22,7 @@ ggplot(timeseries_india, aes(x = date, y = cases)) +
   scale_y_continuous(labels = addUnits,
                      breaks = scales::pretty_breaks(n = 20)) +
   theme(axis.text.x = element_text(angle = 60)) +
-  labs(
-    title = "Cumulative Covid-19 Cases in India"
-  )
+  labs(title = "Cumulative Covid-19 Cases in India")
 
+# Clean-up
+rm(timeseries_india, addUnits)
