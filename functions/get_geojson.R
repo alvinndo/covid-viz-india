@@ -1,3 +1,7 @@
+#' This source code loads The New York Times' Covid data repo
+#' It is also grabbing a GEOJSON map of India from geohacker's repo
+#' Finally all the Covid data is mutated into the GEOJSON data frame
+
 # Get current date
 today <- format(Sys.Date()-1 , "%m-%d-%Y")
 
